@@ -1,41 +1,27 @@
-﻿using CudaHelioCommanderLight.Interfaces;
-using CudaHelioCommanderLight.Models;
+﻿using CudaHelioCommanderLight.Models;
 using System.Linq;
 using System.Windows;
 
 namespace CudaHelioCommanderLight.Operations
 {
-    public class DisplayAmsHeatmapWindowOperation : IDisplayAmsHeatmapWindowOperation
+    public class DisplayAmsHeatmapWindowOperation : Operation<DisplayAmsHeatmapModel>
     {
-        private readonly IDialogService _dialogService;
-        private readonly IHeatMapGraphFactory _heatMapGraphFactory;
-
-        public DisplayAmsHeatmapWindowOperation(IDialogService dialogService,
-                                              IHeatMapGraphFactory heatMapGraphFactory)
-        {
-            _dialogService = dialogService;
-            _heatMapGraphFactory = heatMapGraphFactory;
-        }
-
-        public void Operate(DisplayAmsHeatmapModel model)
+        public static new void Operate(DisplayAmsHeatmapModel model)
         {
             var amsComputedErrors = model.Errors;
-            var heatMap = _heatMapGraphFactory.Create();
+            HeatMapGraph heatMap = new HeatMapGraph();
             heatMap.Show();
 
-            var sortedErrors = amsComputedErrors.OrderBy(err => err.K0)
-                                              .ThenBy(err => err.V)
-                                              .ToList();
+            var sortedErrors = amsComputedErrors.OrderBy(err => err.K0).ThenBy(err => err.V).ToList();
 
             var k0List = amsComputedErrors.Select(err => err.K0).Distinct().OrderBy(k => k);
             var vList = amsComputedErrors.Select(err => err.V).Distinct().OrderBy(v => v);
-            int xSize = k0List.Count();
-            int ySize = vList.Count();
+            int xSize = amsComputedErrors.Select(err => err.K0).Distinct().Count();
+            int ySize = amsComputedErrors.Select(err => err.V).Distinct().Count();
 
             if (xSize < 2 || ySize < 2)
             {
-                _dialogService.ShowMessage("Cannot make map, size too small", "Error",
-                                         MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Cannot make map, size too small");
                 return;
             }
 
@@ -47,15 +33,16 @@ namespace CudaHelioCommanderLight.Operations
                 for (int j = 0; j < ySize; j++)
                 {
                     var currV = vList.ElementAt(j);
-                    var computedError = sortedErrors.FirstOrDefault(err =>
-                        err.K0 == currK0 && err.V == currV);
+                    var computedError = sortedErrors.Where(err => err.K0 == currK0 && err.V == currV).FirstOrDefault();
 
-                    heatPoints[i, j] = model.Tag switch
+                    if (model.Tag.Equals("RMS"))
                     {
-                        "RMS" => new HeatMapGraph.HeatPoint(currK0, currV, computedError?.Error ?? double.NaN),
-                        "LowMaxError" => new HeatMapGraph.HeatPoint(currK0, currV, computedError?.MaxError ?? double.NaN),
-                        _ => new HeatMapGraph.HeatPoint(currK0, currV, double.NaN)
-                    };
+                        heatPoints[i, j] = new HeatMapGraph.HeatPoint(computedError.K0, computedError.V, computedError.Error);
+                    }
+                    else if ((model.Tag.Equals("LowMaxError")))
+                    {
+                        heatPoints[i, j] = new HeatMapGraph.HeatPoint(computedError.K0, computedError.V, computedError.MaxError);
+                    }
                 }
             }
 
@@ -66,10 +53,5 @@ namespace CudaHelioCommanderLight.Operations
             heatMap.ColorbarLabel = "Deviation [%]";
             heatMap.Render();
         }
-    }
-
-    public interface IDisplayAmsHeatmapWindowOperation
-    {
-        void Operate(DisplayAmsHeatmapModel model);
     }
 }

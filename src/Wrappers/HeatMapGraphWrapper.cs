@@ -20,31 +20,7 @@ namespace CudaHelioCommanderLight.Wrappers
         public void SetPoints(HeatMapGraph.HeatPoint[,] heatPoints, int xSize, int ySize)
             => _heatMapGraph.SetPoints(heatPoints, xSize, ySize);
         public void Render() => _heatMapGraph.Render();
-        public string GraphTitle
-        {
-            get => _heatMapGraph.GraphTitle;
-            set => _heatMapGraph.GraphTitle = value;
-        }
-
-        public string XLabel
-        {
-            get => _heatMapGraph.XLabel;
-            set => _heatMapGraph.XLabel = value;
-        }
-
-        public string YLabel
-        {
-            get => _heatMapGraph.YLabel;
-            set => _heatMapGraph.YLabel = value;
-        }
-
-        public string ColorbarLabel
-        {
-            get => _heatMapGraph.ColorbarLabel;
-            set => _heatMapGraph.ColorbarLabel = value;
-        }
     }
-
     public class HeatMapGraphFactory : IHeatMapGraphFactory
     {
         public IHeatMapGraph Create() => new HeatMapGraphWrapper();

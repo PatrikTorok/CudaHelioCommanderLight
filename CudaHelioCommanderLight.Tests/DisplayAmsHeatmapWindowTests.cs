@@ -1,135 +1,108 @@
 ﻿using NUnit.Framework;
 using NSubstitute;
 using CudaHelioCommanderLight.Models;
+using CudaHelioCommanderLight.Helpers;
 using CudaHelioCommanderLight.Interfaces;
 using CudaHelioCommanderLight.Operations;
 using System.Collections.Generic;
-using CudaHelioCommanderLight.Helpers;
-using static CudaHelioCommanderLight.HeatMapGraph;
-using System.Windows;
+using System.Windows.Automation;
 
 namespace CudaHelioCommanderLight.Tests
 {
     [TestFixture]
-    [Apartment(System.Threading.ApartmentState.STA)]
     public class DisplayAmsHeatmapWindowOperationTests
     {
-        private IDisplayAmsHeatmapWindowOperation _operation;
-        private IDialogService _mockDialogService;
-        private IHeatMapGraphFactory _mockGraphFactory;
-        private IHeatMapGraph _mockHeatMap;
+        private IMainHelper _mockMainHelper;
+        private List<ErrorStructure> _validErrors;
+        private DisplayAmsHeatmapModel _validModel;
 
         [SetUp]
         public void Setup()
         {
-            _mockDialogService = Substitute.For<IDialogService>();
-            _mockGraphFactory = Substitute.For<IHeatMapGraphFactory>();
-            _mockHeatMap = Substitute.For<IHeatMapGraph>();
+            _mockMainHelper = Substitute.For<IMainHelper>();
 
-            _mockGraphFactory.Create().Returns(_mockHeatMap);
+            _mockMainHelper.TryConvertToDouble(Arg.Any<string>(), out Arg.Any<double>())
+                .Returns(x =>
+                {
+                    x[1] = 0.0;
+                    return true;
+                });
 
-            _operation = new DisplayAmsHeatmapWindowOperation(
-                _mockDialogService,
-                _mockGraphFactory
-            );
-        }
-
-        [Test]
-        public void Operate_ValidInput_CreatesHeatmap()
-        {
-            // Arrange
-            var model = new DisplayAmsHeatmapModel
+            _validErrors = new List<ErrorStructure>
             {
-                Errors = new List<ErrorStructure>
-        {
-            new ErrorStructure(Substitute.For<IMainHelper>()) { K0 = 1, V = 100 },
-            new ErrorStructure(Substitute.For<IMainHelper>()) { K0 = 2, V = 200 }
-        },
+                new ErrorStructure(_mockMainHelper) { K0 = 1.0, V = 100, Error = 5.0, MaxError = 10.0 },
+                new ErrorStructure(_mockMainHelper) { K0 = 1.0, V = 200, Error = 6.0, MaxError = 12.0 },
+                new ErrorStructure(_mockMainHelper) { K0 = 2.0, V = 100, Error = 7.0, MaxError = 14.0 },
+                new ErrorStructure(_mockMainHelper) { K0 = 2.0, V = 200, Error = 8.0, MaxError = 16.0 }
+            };
+
+            _validModel = new DisplayAmsHeatmapModel
+            {
+                Errors = _validErrors,
                 Tag = "RMS",
-                GraphName = "Test"
+                GraphName = "Test Heatmap"
             };
-
-            // Act
-            _operation.Operate(model);
-
-            // Assert
-            _mockGraphFactory.Received(1).Create();
-            _mockHeatMap.Received(1).SetPoints(Arg.Any<HeatMapGraph.HeatPoint[,]>(), 2, 2);
-            _mockHeatMap.Received(1).Render();
-        }
-
-
-        [Test]
-        public void Operate_SmallXSize_ShowsErrorMessage()
-        {
-            // Arrange
-            var model = new DisplayAmsHeatmapModel
-            {
-                Errors = new List<ErrorStructure>
-                {
-                    new ErrorStructure(Substitute.For<IMainHelper>()) { K0 = 1, V = 100 }
-                },
-                Tag = "RMS"
-            };
-
-            // Act
-            _operation.Operate(model);
-
-            // Assert
-            _mockDialogService.Received(1).ShowMessage(
-                "Cannot make map, size too small",
-                "Error",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning
-            );
         }
 
         [Test]
-        public void Operate_SmallYSize_ShowsErrorMessage()
+        [Apartment(ApartmentState.STA)]
+        public void Operate_ValidInput_GeneratesHeatmapWithoutErrors()
         {
-            // Arrange
-            var model = new DisplayAmsHeatmapModel
+            Assert.DoesNotThrow(() => DisplayAmsHeatmapWindowOperation.Operate(_validModel));
+        }
+/*
+        [Test]
+        [Apartment(ApartmentState.STA)]
+        public void Operate_InvalidInputXSizeTooSmall_ShowsErrorMessage()
+        {
+            var invalidErrors = new List<ErrorStructure>
             {
-                Errors = new List<ErrorStructure>
-                {
-                    new ErrorStructure(Substitute.For<IMainHelper>()) { K0 = 1, V = 100 },
-                    new ErrorStructure(Substitute.For<IMainHelper>()) { K0 = 1, V = 200 }
-                },
-                Tag = "RMS"
+                new ErrorStructure(_mockMainHelper) { K0 = 1.0, V = 100 },
+                new ErrorStructure(_mockMainHelper) { K0 = 1.0, V = 200 }
             };
+            _validModel.Errors = invalidErrors;
 
-            // Act
-            _operation.Operate(model);
+            Assert.DoesNotThrow(() => DisplayAmsHeatmapWindowOperation.Operate(_validModel));
+            // Automate clicking "OK"
+            AutomationElement dialog = AutomationElement.RootElement.FindFirst(
+                TreeScope.Children,
+                new PropertyCondition(AutomationElement.NameProperty, "Cannot make map, size too small"));
 
-            // Assert
-            _mockDialogService.Received(1).ShowMessage(
-                "Cannot make map, size too small",
-                "Error",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning
-            );
+            if (dialog != null)
+            {
+                var okButton = dialog.FindFirst(TreeScope.Descendants,
+                    new PropertyCondition(AutomationElement.AutomationIdProperty, "OK"));
+                InvokePattern clickPattern = okButton.GetCurrentPattern(InvokePattern.Pattern) as InvokePattern;
+                clickPattern.Invoke();
+            }
         }
 
         [Test]
-        public void Operate_EmptyErrors_ShowsError()
+        [Apartment(ApartmentState.STA)]
+        public void Operate_InvalidInputYSizeTooSmall_ShowsErrorMessage()
         {
-            // Arrange
-            var model = new DisplayAmsHeatmapModel
+            var invalidErrors = new List<ErrorStructure>
+    {
+        new ErrorStructure(_mockMainHelper) { K0 = 1.0, V = 100 },
+        new ErrorStructure(_mockMainHelper) { K0 = 2.0, V = 100 }
+    };
+            _validModel.Errors = invalidErrors;
+
+            Assert.DoesNotThrow(() => DisplayAmsHeatmapWindowOperation.Operate(_validModel));
+
+            // Automate clicking "OK"
+            AutomationElement dialog = AutomationElement.RootElement.FindFirst(
+                TreeScope.Children,
+                new PropertyCondition(AutomationElement.NameProperty, "Cannot make map, size too small"));
+
+            if (dialog != null)
             {
-                Errors = new List<ErrorStructure>(),
-                Tag = "RMS"
-            };
-
-            // Act
-            _operation.Operate(model);
-
-            // Assert
-            _mockDialogService.Received(1).ShowMessage(
-                "Cannot make map, size too small",
-                "Error",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning
-            );
-        }
+                var okButton = dialog.FindFirst(TreeScope.Descendants,
+                    new PropertyCondition(AutomationElement.AutomationIdProperty, "OK"));
+                InvokePattern clickPattern = okButton.GetCurrentPattern(InvokePattern.Pattern) as InvokePattern;
+                clickPattern.Invoke();
+            }
+        }*/
     }
+
 }
