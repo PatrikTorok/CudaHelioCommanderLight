@@ -5,7 +5,7 @@ using CudaHelioCommanderLight.Interfaces;
 
 namespace CudaHelioCommanderLight.MainWindowServices;
 
-public class CompareService
+public class CompareService : ICompareService
 {
     private readonly IDialogService _dialogService;
 

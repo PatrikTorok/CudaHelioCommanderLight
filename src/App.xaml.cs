@@ -32,18 +32,18 @@ namespace CudaHelioCommanderLight
             services.AddTransient<CompareLibraryOperation>();
             services.AddTransient<ComputeErrorOperation>();
             services.AddTransient<ButtonService>();
-            services.AddTransient<RenderingService>();
+            services.AddTransient<IRenderingService, RenderingService>();
             services.AddTransient<HeatMapService>();
             services.AddTransient<IHeatMapGraphFactory, HeatMapGraphFactory>();
-            services.AddTransient<CompareService>();
+            services.AddTransient<ICompareService, CompareService>();
 
             services.AddTransient<MainWindow>(provider => new MainWindow(
                 provider.GetRequiredService<IMainHelper>(),
                 provider.GetRequiredService<IDialogService>(),
                 provider.GetRequiredService<ButtonService>(),
-                provider.GetRequiredService<RenderingService>(),
+                provider.GetRequiredService<IRenderingService>(),
                 provider.GetRequiredService<HeatMapService>(),
-                provider.GetRequiredService<CompareService>(),
+                provider.GetRequiredService<ICompareService>(),
                 provider.GetRequiredService<IFileWriter>(),
                 provider.GetRequiredService<CompareLibraryOperation>(),
                 provider.GetRequiredService<IMetricsConfig>()

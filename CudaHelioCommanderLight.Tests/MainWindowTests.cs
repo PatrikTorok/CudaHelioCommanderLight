@@ -23,9 +23,9 @@ public class MainWindowTests
     private IDialogService _dialogService;
     private IHeatMapGraphFactory _heatMapGraphFactory;
     private ButtonService _buttonService;
-    private RenderingService _renderingService;
+    private IRenderingService _renderingService;
     private HeatMapService _heatMapService;
-    private CompareService _compareService;
+    private ICompareService _compareService;
     private IFileWriter _fileWriter;
     private CompareLibraryOperation _compareLibraryOperation;
     private IMetricsConfig _metricsConfig;
@@ -39,9 +39,9 @@ public class MainWindowTests
 
         // Initialize services with correct dependencies
         _buttonService = new ButtonService(_dialogService);
-        _renderingService = Substitute.For<RenderingService>(_mainHelper, _dialogService);
-        _heatMapService = new HeatMapService(_dialogService, _heatMapGraphFactory);
-        _compareService = new CompareService(_dialogService);
+        _renderingService = Substitute.For<IRenderingService>();
+        _heatMapService = Substitute.For<HeatMapService>(_dialogService, _heatMapGraphFactory);
+        _compareService = Substitute.For<ICompareService>();
         _fileWriter = Substitute.For<IFileWriter>();
         _metricsConfig = Substitute.For<IMetricsConfig>();
 
@@ -99,7 +99,15 @@ public class MainWindowTests
         // Assert
         _dialogService.Received(1).ShowMessage("Library not found", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
     }
-
+    [TearDown]
+    public void TearDown()
+    {
+        // Clear received calls for all substitutes
+        _heatMapService.ClearReceivedCalls();
+        _dialogService.ClearReceivedCalls();
+        _compareService.ClearReceivedCalls();
+        _renderingService.ClearReceivedCalls();
+    }
     [Test]
     public void ExportAsCsvBtn_Click_CallsExportAsCsvOperation()
     {
@@ -139,7 +147,7 @@ public class MainWindowTests
         _mainWindow.RenderAmsGraph(amsExecution, errorStructure);
 
         // Assert
-        _renderingService.Received(1).RenderAmsGraph(amsExecution, new WpfPlotWrapper(new WpfPlot()), errorStructure);
+        _renderingService.Received(1).RenderAmsGraph(amsExecution, Arg.Any<IWpfPlotWrapper>(), errorStructure);
     }
 
 
@@ -155,4 +163,76 @@ public class MainWindowTests
         // Assert
         _dialogService.Received(1).ShowMessage("Library not found", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
     }
+    [Test]
+    public void DrawAmsHeatmapBtn_Click_CallsHeatMapService()
+    {
+        // Arrange
+        var button = new Button { Tag = "RMS" };
+        _mainWindow.amsComputedErrors = new List<ErrorStructure>();
+        _mainWindow.currentDisplayedAmsInvestigation = new AmsExecution { FileName = "TestFile" };
+
+        // Act
+        _mainWindow.DrawAmsHeatmapBtn_Click(button, null);
+
+        // Assert
+        _heatMapService.Received(1).DrawAmsHeatmapBtn("TestFile", _mainWindow.amsComputedErrors, "RMS");
+    }
+    [Test]
+    public void CompareWithLib_Click_CallsCompareService()
+    {
+        // Arrange
+        var button = new Button { Tag = "libHelium" };
+        _compareService.CompareWithLib(
+            Arg.Is("libHelium"),
+            Arg.Any<ComboBox>(),
+            Arg.Any<ComboBox>()
+        ).Returns(("libFiles\\lib-helium", LibStructureType.DIRECTORY_SEPARATED));
+
+        // Act
+        _mainWindow.CompareWithLib_Click(button, null);
+
+        // Assert
+        _compareService.Received(1).CompareWithLib(
+            Arg.Is("libHelium"),
+            Arg.Any<ComboBox>(),
+            Arg.Any<ComboBox>()
+        );
+    }
+    [Test]
+    public void AmsErrorsListBox_SelectionChanged_CallsRenderingService()
+    {
+        // Arrange
+        var errorStructure = new ErrorStructure(_mainHelper)
+        {
+            // Initialize required properties
+            TKinList = new List<double> { 1.0, 2.0 },
+            Spe1e3binList = new List<double> { 10.0, 20.0 },
+            FilePath = "test/path.txt"
+        };
+
+        var amsExecution = new AmsExecution
+        {
+            // Initialize required properties
+            TKin = new List<double> { 1.0, 2.0 },
+            Spe1e3 = new List<double> { 10.0, 20.0 }
+        };
+
+        _mainWindow.amsErrorsListBox = new ListBox();
+        _mainWindow.amsErrorsListBox.SelectedItem = errorStructure;
+
+        _mainWindow.dataGridAmsInner = new DataGrid();
+        _mainWindow.dataGridAmsInner.SelectedItem = amsExecution;
+
+        // Act
+        _mainWindow.AmsErrorsListBox_SelectionChanged(null, null);
+
+        // Assert
+        _renderingService.Received(1).AmsErrorsListBox_SelectionChanged(
+            Arg.Any<ErrorStructure>(),
+            Arg.Any<IWpfPlotWrapper>(),
+            Arg.Any<IWpfPlotWrapper>(),
+            Arg.Any<AmsExecution>()
+        );
+    }
+
 }

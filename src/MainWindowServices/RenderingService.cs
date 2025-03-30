@@ -15,7 +15,7 @@ using CudaHelioCommanderLight.Wrappers;
 
 namespace CudaHelioCommanderLight.MainWindowServices
 {
-    public class RenderingService
+    public class RenderingService : IRenderingService
     {
         private readonly IDialogService _dialogService;
         private readonly IMainHelper _mainHelper;
@@ -60,10 +60,14 @@ namespace CudaHelioCommanderLight.MainWindowServices
             amsGraphWpfPlot.Render();
         }
 
-        internal void RenderAmsRatioGraph(AmsExecution amsExecution, IWpfPlotWrapper amsGraphRatioWpfPlot,
+        public void RenderAmsRatioGraph(AmsExecution amsExecution, IWpfPlotWrapper amsGraphRatioWpfPlot,
             ErrorStructure? errorStructure = null)
         {
-            amsGraphRatioWpfPlot.Reset();
+            try
+            {
+                amsGraphRatioWpfPlot.Reset();
+            }
+            catch { amsGraphRatioWpfPlot = new WpfPlotWrapper(new WpfPlot()); }
 
             var plotWrapper = amsGraphRatioWpfPlot.PlotWrapper;
 

@@ -31,16 +31,16 @@ namespace CudaHelioCommanderLight
         public ObservableCollection<ExecutionDetail> ExecutionDetailList { get; set; }
         private string versionStr = "Version: 1.1.1l";
         internal PanelType currentlyDisplayedPanelType;
-        private int executionDetailSelectedIdx = -1;
+        internal int executionDetailSelectedIdx = -1;
         internal List<ErrorStructure> amsComputedErrors;
         internal List<string> GeliosphereLibTypes;
         private List<string> GeliosphereLibBurgerRatios;
         private List<string> GeliosphereLibJGRRatios;
         private MainWindowVm _mainWindowVm;
         private readonly ButtonService _buttonService;
-        private readonly RenderingService _renderingService;
+        private readonly IRenderingService _renderingService;
         private readonly HeatMapService _heatMapService;
-        private readonly CompareService _compareService;
+        private readonly ICompareService _compareService;
         private readonly IMainHelper _mainHelper;
         private readonly IDialogService _dialogService;
         private readonly IFileWriter _fileWriter;
@@ -50,9 +50,9 @@ namespace CudaHelioCommanderLight
         public MainWindow(IMainHelper mainHelper,
                           IDialogService dialogService,
                           ButtonService buttonService,
-                          RenderingService renderingService,
+                          IRenderingService renderingService,
                           HeatMapService heatMapService,
-                          CompareService compareService,
+                          ICompareService compareService,
                           IFileWriter fileWriter,
                           CompareLibraryOperation compareLibraryOperation,
                           IMetricsConfig metricsConfig,
@@ -235,7 +235,7 @@ namespace CudaHelioCommanderLight
             }
         }
 
-        private void AmsErrorsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        internal void AmsErrorsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var error = _renderingService.AmsErrorsListBox_SelectionChanged((ErrorStructure)amsErrorsListBox.SelectedItem, new WpfPlotWrapper(AmsGraphWpfPlot), new WpfPlotWrapper(AmsGraphRatioWpfPlot), (AmsExecution)dataGridAmsInner.SelectedItem);
             if (error == null)
@@ -429,7 +429,7 @@ namespace CudaHelioCommanderLight
             }
         }
 
-        private void CreateErrorGraphBtn_Click(object sender, RoutedEventArgs e)
+        internal void CreateErrorGraphBtn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -487,7 +487,7 @@ namespace CudaHelioCommanderLight
             amsErrorsListBox.ItemsSource = new List<ErrorStructure>();
         }
 
-        private void ConfigureMetricsBtn_Click(object sender, RoutedEventArgs e)
+        internal void ConfigureMetricsBtn_Click(object sender, RoutedEventArgs e)
         {
             OpenConfigurationWindow();
         }
@@ -566,7 +566,7 @@ namespace CudaHelioCommanderLight
             _buttonService.ExportJsonBtn(ExecutionDetailList, executionDetailSelectedIdx);
         }
 
-        private void ComputeErrorBtn_Click(object sender, RoutedEventArgs e)
+        internal void ComputeErrorBtn_Click(object sender, RoutedEventArgs e)
         {
             ExecutionDetail executionDetail = ExecutionDetailList[executionDetailSelectedIdx];
             OpenFileDialog fileDialog = new OpenFileDialog();
@@ -647,12 +647,12 @@ namespace CudaHelioCommanderLight
             mainCanvas.Background = spe1e3FitCanvas.Background;
         }
 
-        private void DrawHeatmapBtn_Click(object sender, RoutedEventArgs e)
+        internal void DrawHeatmapBtn_Click(object sender, RoutedEventArgs e)
         {
             _heatMapService.DrawHeatmapBtn(ExecutionDetailList, executionDetailSelectedIdx);
         }
 
-        private void ExportListAsCsvBtn_Click(object sender, RoutedEventArgs e)
+        internal void ExportListAsCsvBtn_Click(object sender, RoutedEventArgs e)
         {
             // Cast ItemsSource to IEnumerable
             var exportList = amsErrorsListBox.ItemsSource as IEnumerable<ErrorStructure>;
