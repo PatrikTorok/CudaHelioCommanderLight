@@ -30,5 +30,27 @@ namespace CudaHelioCommanderLight.Services
             filePath = null;
             return false;
         }
+        public bool ShowFolderDialog()
+        {
+            var folderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            bool result = folderDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK;
+            SelectedFolderPath = result ? folderDialog.SelectedPath : null;
+            return result;
+        }
+
+        public string SelectedFolderPath { get; private set; }
+
+        public bool SaveFileDialogWithTitle(out string filePath, string filter, string title)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = filter,
+                Title = title
+            };
+            bool result = saveFileDialog.ShowDialog() == true;
+            filePath = result ? saveFileDialog.FileName : null;
+            return result;
+        }
+
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.Win32;
 
 namespace CudaHelioCommanderLight.MainWindowServices;
 
-public class ButtonService
+public class ButtonService : IButtonService
 {
     private readonly IDialogService _dialogService;
     public ButtonService(IDialogService dialogService)
@@ -29,23 +29,19 @@ public class ButtonService
             return;
         }
 
-        SaveFileDialog fileDialog = new SaveFileDialog();
-
-        fileDialog.Filter = "JSON File|*.json";
-        fileDialog.Title = "Save JSON File";
-        fileDialog.ShowDialog();
-
-        // If the file name is not an empty string open it for saving.
-        if (fileDialog.FileName != "")
+        if (_dialogService.SaveFileDialogWithTitle(out string filePath, "JSON File|*.json", "Save JSON File"))
         {
-            var exportModel = new ExecutionListExportModel
+            if (!string.IsNullOrEmpty(filePath))
             {
-                Executions = executionDetail.Executions,
-                FilePath = fileDialog.FileName
-            };
-            ExportAsJsonOperation.Operate(exportModel);
+                var exportModel = new ExecutionListExportModel
+                {
+                    Executions = executionDetail.Executions,
+                    FilePath = filePath
+                };
+                ExportAsJsonOperation.Operate(exportModel);
+            }
         }
     }
-    
-    
+
+
 }

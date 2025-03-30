@@ -23,7 +23,7 @@ public class MainWindowTests
     private IMainHelper _mainHelper;
     private IDialogService _dialogService;
     private IHeatMapGraphFactory _heatMapGraphFactory;
-    private ButtonService _buttonService;
+    private IButtonService _buttonService;
     private IRenderingService _renderingService;
     private HeatMapService _heatMapService;
     private ICompareService _compareService;
@@ -40,7 +40,7 @@ public class MainWindowTests
         _heatMapGraphFactory = Substitute.For<IHeatMapGraphFactory>();
 
         // Initialize services with correct dependencies
-        _buttonService = new ButtonService(_dialogService);
+        _buttonService = Substitute.For<IButtonService>();
         _renderingService = Substitute.For<IRenderingService>();
         _heatMapService = Substitute.For<HeatMapService>(_dialogService, _heatMapGraphFactory);
         _compareService = Substitute.For<ICompareService>();
@@ -79,19 +79,15 @@ public class MainWindowTests
     }
 
     [Test]
-    public void AboutUsButton_Click_CallsDialogService()
+    public void AboutUsButton_Click_CallsButtonService()
     {
         // Act
         _mainWindow.AboutUsButton_Click(null, null);
 
         // Assert
-        _dialogService.Received(1).ShowMessage(
-            "Slovak Academy of Sciences\n\nDeveloped by: Martin Nguyen, Pavol Bobik\n\nCopyright 2023",
-            "About Us",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information
-        );
+        _buttonService.Received(1).AboutUsButton();
     }
+
 
     [Test]
     public void CompareWithLibrary_WhenLibraryNotFound_ShowsErrorMessage()
@@ -113,6 +109,7 @@ public class MainWindowTests
         _dialogService.ClearReceivedCalls();
         _compareService.ClearReceivedCalls();
         _renderingService.ClearReceivedCalls();
+        _buttonService.ClearReceivedCalls();
     }
     [Test]
     public void ExportAsCsvBtn_Click_CallsExportAsCsvOperation()
@@ -373,4 +370,57 @@ public class MainWindowTests
             Arg.Any<IMainHelper>()
         );
     }
+    [Test]
+    public void OpenExplorerButton_Click_UpdatesExecutionList()
+    {
+        // Arrange
+        // Initialize required panels to prevent NullReferenceException
+        _mainWindow.ExplorerMainpanel = new Grid(); // Replace Panel with Grid or another concrete type
+        _mainWindow.ExplorerLeftPanel = new Grid();
+        _mainWindow.ExplorerRightPanel = new Grid();
+        _mainWindow.StatusCheckerMainPanel = new Grid();
+        _mainWindow.StatusCheckerGridPanelDetail = new Grid();
+        _mainWindow.AmsInvestigationPanel = new Grid();
+        _mainWindow.AmsInvestigationDetailPanel = new Grid();
+        _mainWindow.ActiveCalculationsDataGrid = new DataGrid();
+
+        // Mock folder dialog
+        _dialogService.ShowFolderDialog().Returns(true);
+        _dialogService.SelectedFolderPath.Returns(@"C:\TestPath");
+
+        var mockExecutionStatus = new ExecutionStatus();
+        _mainHelper.ExtractOfflineExecStatus(Arg.Any<string>()).Returns(mockExecutionStatus);
+
+        // Act
+        _mainWindow.OpenExplorerButton_Click(null, null);
+
+        // Assert
+        _mainHelper.Received(1).ExtractOfflineExecStatus(@"C:\TestPath");
+        Assert.That(_mainWindow.ExecutionDetailList, Is.Not.Null);
+    }
+    [Test]
+    public void ExportJsonBtn_Click_CallsButtonService()
+    {
+        // Arrange
+        var executionDetail = new ExecutionDetail();
+        _mainWindow.ExecutionDetailList = new ObservableCollection<ExecutionDetail> { executionDetail };
+        _mainWindow.executionDetailSelectedIdx = 0;
+
+        _dialogService.SaveFileDialogWithTitle(out Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
+            .Returns(x => {
+                x[0] = "test.json";
+                return true;
+            });
+
+        // Act
+        _mainWindow.ExportJsonBtn_Click(null, null);
+
+        // Assert
+        _buttonService.Received(1).ExportJsonBtn(
+            Arg.Any<ObservableCollection<ExecutionDetail>>(),
+            Arg.Any<int>()
+        );
+    }
+
+
 }

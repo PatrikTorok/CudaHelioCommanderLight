@@ -37,7 +37,7 @@ namespace CudaHelioCommanderLight
         private List<string> GeliosphereLibBurgerRatios;
         private List<string> GeliosphereLibJGRRatios;
         private MainWindowVm _mainWindowVm;
-        private readonly ButtonService _buttonService;
+        private readonly IButtonService _buttonService;
         private readonly IRenderingService _renderingService;
         private readonly HeatMapService _heatMapService;
         private readonly ICompareService _compareService;
@@ -48,9 +48,10 @@ namespace CudaHelioCommanderLight
         private readonly IMetricsConfig _metricsConfig;
         private readonly IOpenConfigurationWindowOperation _openConfigWindowOperation;
 
+
         public MainWindow(IMainHelper mainHelper,
                           IDialogService dialogService,
-                          ButtonService buttonService,
+                          IButtonService buttonService,
                           IRenderingService renderingService,
                           HeatMapService heatMapService,
                           ICompareService compareService,
@@ -338,14 +339,12 @@ namespace CudaHelioCommanderLight
 
         internal void OpenExplorerButton_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.FolderBrowserDialog folderDialog = new System.Windows.Forms.FolderBrowserDialog();
-            System.Windows.Forms.DialogResult dialogResult = folderDialog.ShowDialog();
-            if (dialogResult != System.Windows.Forms.DialogResult.OK)
+            if (!_dialogService.ShowFolderDialog())
             {
                 return;
             }
 
-            string selectedFolderPath = folderDialog.SelectedPath;
+            string selectedFolderPath = _dialogService.SelectedFolderPath;
             if (string.IsNullOrEmpty(selectedFolderPath))
             {
                 return;
@@ -518,7 +517,7 @@ namespace CudaHelioCommanderLight
             CompareWithLibrary(libPath, LibStructureType.FILES_FORCEFIELD2023);
         }
 
-        private void DgItemCheckboxClicked(object sender, RoutedEventArgs e)
+        internal void DgItemCheckboxClicked(object sender, RoutedEventArgs e)
         {
             if (ActiveCalculationsDataGrid.SelectedIndex == -1)
             {
@@ -530,7 +529,7 @@ namespace CudaHelioCommanderLight
             selectedExecutionDetail.IsSelected = clickedCb.IsChecked == true;
         }
 
-        private void CalculationDetailButton_Click(object sender, RoutedEventArgs e)
+        internal void CalculationDetailButton_Click(object sender, RoutedEventArgs e)
         {
             ExecutionDetail exD = (ExecutionDetail)ActiveCalculationsDataGrid.SelectedItem;
             executionDetailSelectedIdx = ExecutionDetailList.IndexOf(exD);
@@ -570,7 +569,7 @@ namespace CudaHelioCommanderLight
             return null;
         }
 
-        private void ExportJsonBtn_Click(object sender, RoutedEventArgs e)
+        internal void ExportJsonBtn_Click(object sender, RoutedEventArgs e)
         {
             _buttonService.ExportJsonBtn(ExecutionDetailList, executionDetailSelectedIdx);
         }
