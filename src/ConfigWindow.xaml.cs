@@ -1,5 +1,6 @@
 ﻿using CudaHelioCommanderLight.Config;
 using CudaHelioCommanderLight.Helpers;
+using CudaHelioCommanderLight.Interfaces;
 using System;
 using System.Linq;
 using System.Windows;
@@ -9,19 +10,20 @@ namespace CudaHelioCommanderLight
     /// <summary>
     /// Interaction logic for ConfigWindow.xaml
     /// </summary>
-    public partial class ConfigWindow : Window
+    public partial class ConfigWindow : Window, IConfigWindow
     {
-        public MetricsConfig MetricsConfig { get; set; }
-        public bool HasChanged { get; private set; }
+        public IMetricsConfig MetricsConfig { get; set; }
+        public bool HasChanged { get; internal set; }
 
         private readonly IMainHelper _mainHelper;
 
-        public ConfigWindow(MetricsConfig metricsConfig, IMainHelper mainHelper)
+        public ConfigWindow(IMetricsConfig metricsConfig, IMainHelper mainHelper)
         {
             InitializeComponent();
             this.MetricsConfig = metricsConfig;
             _mainHelper = mainHelper ?? throw new ArgumentNullException(nameof(mainHelper));
 
+            // Use the interface properties instead of direct access
             K0UnitsComboBox.ItemsSource = Enum.GetValues(typeof(MetricsConfig.K0Metrics)).Cast<MetricsConfig.K0Metrics>();
             VUnitsComboBox.ItemsSource = Enum.GetValues(typeof(MetricsConfig.VMetrics)).Cast<MetricsConfig.VMetrics>();
             DtUnitsComboBox.ItemsSource = Enum.GetValues(typeof(MetricsConfig.DtMetrics)).Cast<MetricsConfig.DtMetrics>();
@@ -55,4 +57,5 @@ namespace CudaHelioCommanderLight
             this.Close();
         }
     }
+
 }

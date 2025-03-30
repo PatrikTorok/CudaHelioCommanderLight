@@ -13,6 +13,7 @@ using CudaHelioCommanderLight;
 using System.Windows.Controls;
 using ScottPlot;
 using CudaHelioCommanderLight.Wrappers;
+using CudaHelioCommanderLight.Config;
 
 [TestFixture]
 [Apartment(ApartmentState.STA)]
@@ -29,6 +30,7 @@ public class MainWindowTests
     private IFileWriter _fileWriter;
     private CompareLibraryOperation _compareLibraryOperation;
     private IMetricsConfig _metricsConfig;
+    private IOpenConfigurationWindowOperation _openConfigurationWindowOperation;
 
     [SetUp]
     public void Setup()
@@ -44,12 +46,15 @@ public class MainWindowTests
         _compareService = Substitute.For<ICompareService>();
         _fileWriter = Substitute.For<IFileWriter>();
         _metricsConfig = Substitute.For<IMetricsConfig>();
+        _openConfigurationWindowOperation = Substitute.For<IOpenConfigurationWindowOperation>();
 
         _compareLibraryOperation = new CompareLibraryOperation(
             _dialogService,
             _mainHelper,
             _metricsConfig
         );
+
+
 
         _mainWindow = new MainWindow(
             mainHelper: _mainHelper,
@@ -61,6 +66,7 @@ public class MainWindowTests
             fileWriter: _fileWriter,
             compareLibraryOperation: _compareLibraryOperation,
             metricsConfig: _metricsConfig,
+            openConfigWindowOperation : _openConfigurationWindowOperation,
             true
         );
 
@@ -347,5 +353,24 @@ public class MainWindowTests
             MessageBoxImage.Error
         );
     }
+    [Test]
+    public void ConfigureMetricsBtn_Click_ShowsConfigurationWindow()
+    {
+        // Arrange
+        var mockConfigWindow = Substitute.For<IConfigWindow>();
+        mockConfigWindow.HasChanged.Returns(false);
 
+        _openConfigurationWindowOperation
+            .Operate(Arg.Any<IMetricsConfig>(), Arg.Any<IMainHelper>())
+            .Returns(mockConfigWindow);
+
+        // Act
+        _mainWindow.ConfigureMetricsBtn_Click(null, null);
+
+        // Assert
+        _openConfigurationWindowOperation.Received(1).Operate(
+            Arg.Any<IMetricsConfig>(),
+            Arg.Any<IMainHelper>()
+        );
+    }
 }

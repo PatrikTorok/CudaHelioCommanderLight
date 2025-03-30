@@ -1,16 +1,17 @@
 ﻿using CudaHelioCommanderLight.Config;
 using CudaHelioCommanderLight.Helpers;
+using CudaHelioCommanderLight.Interfaces;
 
 namespace CudaHelioCommanderLight.Operations
 {
-    public class OpenConfigurationWindowOperation : Operation<MetricsConfig, ConfigWindow>
+    public class OpenConfigurationWindowOperation : IOpenConfigurationWindowOperation
     {
-        public static new ConfigWindow Operate(MetricsConfig metricsConfig, IMainHelper mainHelper)
+        public IConfigWindow Operate(IMetricsConfig metricsConfig, IMainHelper mainHelper)
         {
             var configWindow = new ConfigWindow(metricsConfig, mainHelper);
             configWindow.ShowDialog();
-
             return configWindow;
         }
     }
+
 }

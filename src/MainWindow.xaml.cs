@@ -46,6 +46,7 @@ namespace CudaHelioCommanderLight
         private readonly IFileWriter _fileWriter;
         private readonly CompareLibraryOperation _compareLibraryOperation;
         private readonly IMetricsConfig _metricsConfig;
+        private readonly IOpenConfigurationWindowOperation _openConfigWindowOperation;
 
         public MainWindow(IMainHelper mainHelper,
                           IDialogService dialogService,
@@ -56,6 +57,7 @@ namespace CudaHelioCommanderLight
                           IFileWriter fileWriter,
                           CompareLibraryOperation compareLibraryOperation,
                           IMetricsConfig metricsConfig,
+                          IOpenConfigurationWindowOperation openConfigWindowOperation,
                           bool isUnitTest = false)
         {
             if (!isUnitTest)
@@ -71,6 +73,7 @@ namespace CudaHelioCommanderLight
             _fileWriter = fileWriter ?? throw new ArgumentNullException(nameof(fileWriter));
             _compareLibraryOperation = compareLibraryOperation ?? throw new ArgumentNullException(nameof(compareLibraryOperation));
             _metricsConfig = metricsConfig ?? throw new ArgumentNullException(nameof(metricsConfig));
+            _openConfigWindowOperation = openConfigWindowOperation ?? throw new ArgumentNullException(nameof(openConfigWindowOperation));
             if (isUnitTest)
             {
                 Resources.MergedDictionaries.Add(new ResourceDictionary
@@ -494,8 +497,14 @@ namespace CudaHelioCommanderLight
 
         private void OpenConfigurationWindow()
         {
-            var configWindowResult = OpenConfigurationWindowOperation.Operate(MetricsConfig.GetInstance(_mainHelper), _mainHelper);
-            MetricsUsedTB.Text = MetricsConfig.GetInstance(_mainHelper).ToString();
+            var configWindowResult = _openConfigWindowOperation.Operate(
+                MetricsConfig.GetInstance(_mainHelper),
+                _mainHelper
+            );
+            if (MetricsUsedTB != null) // Add null check
+            {
+                MetricsUsedTB.Text = MetricsConfig.GetInstance(_mainHelper).ToString();
+            }
 
             if (currentlyDisplayedPanelType == PanelType.AMS_INVESTIGATION_DETAIL && configWindowResult.HasChanged)
             {

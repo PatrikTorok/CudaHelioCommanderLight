@@ -36,6 +36,7 @@ namespace CudaHelioCommanderLight
             services.AddTransient<HeatMapService>();
             services.AddTransient<IHeatMapGraphFactory, HeatMapGraphFactory>();
             services.AddTransient<ICompareService, CompareService>();
+            services.AddTransient<IOpenConfigurationWindowOperation, OpenConfigurationWindowOperation>();
 
             services.AddTransient<MainWindow>(provider => new MainWindow(
                 provider.GetRequiredService<IMainHelper>(),
@@ -46,7 +47,8 @@ namespace CudaHelioCommanderLight
                 provider.GetRequiredService<ICompareService>(),
                 provider.GetRequiredService<IFileWriter>(),
                 provider.GetRequiredService<CompareLibraryOperation>(),
-                provider.GetRequiredService<IMetricsConfig>()
+                provider.GetRequiredService<IMetricsConfig>(),
+                provider.GetRequiredService<IOpenConfigurationWindowOperation>()
             ));
         }
 
