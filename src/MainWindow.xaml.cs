@@ -569,11 +569,10 @@ namespace CudaHelioCommanderLight
         internal void ComputeErrorBtn_Click(object sender, RoutedEventArgs e)
         {
             ExecutionDetail executionDetail = ExecutionDetailList[executionDetailSelectedIdx];
-            OpenFileDialog fileDialog = new OpenFileDialog();
 
-            if (fileDialog.ShowDialog() == true)
+
+            if (_dialogService.ShowOpenFileDialog(out string filePath))
             {
-                string filePath = fileDialog.FileName;
                 bool dataExtractSuccess = _mainHelper.ExtractOutputDataFile(filePath, out OutputFileContent outputFileContent);
 
                 if (!dataExtractSuccess)

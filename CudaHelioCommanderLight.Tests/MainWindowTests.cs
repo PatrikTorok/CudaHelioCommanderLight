@@ -234,5 +234,118 @@ public class MainWindowTests
             Arg.Any<AmsExecution>()
         );
     }
+    [Test]
+    public void CreateErrorGraphBtn_Click_CallsRenderingService()
+    {
+        // Arrange
+        _mainWindow.ActiveCalculationsDataGrid = new DataGrid();
+
+        // Act
+        _mainWindow.CreateErrorGraphBtn_Click(null, null);
+
+        // Assert
+        _renderingService.Received(1).CreateErrorGraph(_mainWindow.ActiveCalculationsDataGrid);
+    }
+    [Test]
+    public void DrawHeatmapBtn_Click_CallsHeatMapService()
+    {
+        // Arrange
+        var executionDetail = new ExecutionDetail
+        {
+            FolderName = "TestFolder",
+            MethodType = MethodType.FP_1D
+        };
+
+        // Add parameters FIRST
+        executionDetail.AddK0(1.0);
+        executionDetail.AddK0(1.5);
+        executionDetail.AddV(2.0);
+        executionDetail.AddV(2.5);
+
+        // Then add executions matching these parameters
+        executionDetail.Executions.AddRange(new[]
+        {
+                new Execution(V: 2.0, K0: 1.0, N: 10, dt: 0.1, MethodType.FP_1D) { ErrorValue = 5 },
+                new Execution(V: 2.0, K0: 1.5, N: 10, dt: 0.1, MethodType.FP_1D) { ErrorValue = 4 },
+                new Execution(V: 2.5, K0: 1.0, N: 10, dt: 0.1, MethodType.FP_1D) { ErrorValue = 3 },
+                new Execution(V: 2.5, K0: 1.5, N: 10, dt: 0.1, MethodType.FP_1D) { ErrorValue = 2 }
+            });
+
+        var executionDetailList = new ObservableCollection<ExecutionDetail> { executionDetail };
+        _mainWindow.ExecutionDetailList = executionDetailList;
+        _mainWindow.executionDetailSelectedIdx = 0;
+
+        // Act
+        _mainWindow.DrawHeatmapBtn_Click(null, null);
+
+        // Assert
+        _heatMapService.Received(1).DrawHeatmapBtn(_mainWindow.ExecutionDetailList, 0);
+    }
+    [Test]
+    public void ExportListAsCsvBtn_Click_WithData_CallsFileWriter()
+    {
+        // Arrange
+        var testErrors = new List<ErrorStructure>
+    {
+        new ErrorStructure(_mainHelper) { K0 = 1.0, V = 100, Error = 0.1 }
+    };
+        _mainWindow.amsErrorsListBox.ItemsSource = testErrors;
+
+        // Act
+        _mainWindow.ExportListAsCsvBtn_Click(null, null);
+
+        // Assert
+        _fileWriter.Received(1).WriteToFile(Arg.Any<string>(), Arg.Any<string>());
+        _dialogService.Received(1).ShowMessage(
+            "Export successful!",
+            "Success",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information
+        );
+    }
+    [Test]
+    public void ExportListAsCsvBtn_Click_WithNoData_ShowsWarning()
+    {
+        // Arrange
+        _mainWindow.amsErrorsListBox.ItemsSource = new List<ErrorStructure>();
+
+        // Act
+        _mainWindow.ExportListAsCsvBtn_Click(null, null);
+
+        // Assert
+        _dialogService.Received(1).ShowMessage(
+            "No data available for export.",
+            "Warning",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning
+        );
+        _fileWriter.DidNotReceive().WriteToFile(Arg.Any<string>(), Arg.Any<string>());
+    }
+    [Test]
+    public void ComputeErrorBtn_Click_WithInvalidFile_ShowsErrorMessage()
+    {
+        // Arrange
+        _mainWindow.ExecutionDetailList = new ObservableCollection<ExecutionDetail> { new ExecutionDetail() };
+        _mainWindow.executionDetailSelectedIdx = 0;
+
+        // Use the correct method with out parameter
+        _dialogService.ShowOpenFileDialog(out Arg.Any<string>()).Returns(x => {
+            x[0] = "test.csv";  // Set the out parameter
+            return true;        // Return dialog result
+        });
+
+        _mainHelper.ExtractOutputDataFile(Arg.Any<string>(), out _).Returns(false);
+
+        // Act
+        _mainWindow.ComputeErrorBtn_Click(null, null);
+
+        // Assert
+        _dialogService.Received(1).ShowMessage(
+            "Cannot read data values from the input file.",
+            "Error",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error
+        );
+    }
 
 }
