@@ -80,12 +80,16 @@ public class HeatMapGraphTests
     [Test]
     public void Render_SetsCorrectMinMaxValues()
     {
+        var originalCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = new CultureInfo("fr-FR");  // Use comma decimal separator
         // Act
         _heatMapGraph.Render();
 
         // Assert
         Assert.That(_heatMapGraph.MinTb.Text, Is.EqualTo("5,00%"));
         Assert.That(_heatMapGraph.MaxTb.Text, Is.EqualTo("20,00%"));
+        CultureInfo.CurrentCulture = originalCulture;
+
     }
 
     [Test]
