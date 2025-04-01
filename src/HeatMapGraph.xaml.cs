@@ -34,21 +34,23 @@ namespace CudaHelioCommanderLight
         public string YLabel { get; set; }
         public string ColorbarLabel { get; set; }
 
-        private HeatPoint[,] HeatPoints;
-        private int xCount;
-        private int yCount;
+        internal HeatPoint[,] HeatPoints;
+        internal int xCount;
+        internal int yCount;
 
         private ArrayList drawnObjects;
-        private bool mark5Lowest = false;
-        private bool mark5Highest = false;
+        internal bool mark5Lowest = false;
+        internal bool mark5Highest = false;
 
         private List<Color> ColorsOfMap = new List<Color>();
         private byte Alpha = 0xff;
 
         private bool isMinMaxColorValueExternal;
-        private double minColorValue;
-        private double maxColorValue;
+        internal double minColorValue;
+        internal double maxColorValue;
 
+        internal IFileWriter fileWriter;
+        internal IDialogService dialogService;
         private readonly IMainHelper _mainHelper;
 
         public HeatMapGraph(IMainHelper mainHelper)
@@ -278,7 +280,7 @@ namespace CudaHelioCommanderLight
             drawnObjects = new ArrayList();
         }
 
-        private void Mark5LowestHighestCb_Checked(object sender, RoutedEventArgs e)
+        internal void Mark5LowestHighestCb_Checked(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("ASD");
             mark5Lowest = Mark5LowestCb.IsChecked == true;
@@ -286,8 +288,8 @@ namespace CudaHelioCommanderLight
             UndrawHistogram();
             Render();
         }
-
-        private void RerenderBtn_Click(object sender, RoutedEventArgs e)
+        
+        internal void RerenderBtn_Click(object sender, RoutedEventArgs e)
         {
             isMinMaxColorValueExternal = true;
             _mainHelper.TryConvertToDouble(MinColorValueTb.Text, out double outMinColorValue);
@@ -310,7 +312,7 @@ namespace CudaHelioCommanderLight
             RerenderBtn_Click(null, null);
         }
 
-        private void SetMaxToMaxBtn_Click(object sender, RoutedEventArgs e)
+        internal void SetMaxToMaxBtn_Click(object sender, RoutedEventArgs e)
         {
             List<double> intensities = new List<double>();
 
@@ -327,7 +329,7 @@ namespace CudaHelioCommanderLight
             RerenderBtn_Click(null, null);
         }
 
-        private void SetMinToMinBtn_Click(object sender, RoutedEventArgs e)
+        internal void SetMinToMinBtn_Click(object sender, RoutedEventArgs e)
         {
             List<double> intensities = new List<double>();
 
@@ -344,10 +346,15 @@ namespace CudaHelioCommanderLight
             RerenderBtn_Click(null, null);
         }
 
-        private void ExportAsCsvBtn_Click(object sender, RoutedEventArgs e)
+        internal void ExportAsCsvBtn_Click(object sender, RoutedEventArgs e)
         {
-            IFileWriter fileWriter = new FileWriter();
-            IDialogService dialogService = new DialogService();
+            if (fileWriter == null) {
+                fileWriter = new FileWriter();
+            }
+            if (dialogService == null)
+            {
+                dialogService = new DialogService();
+            }
             ExportAsCsvOperation.Operate(HeatPoints, fileWriter, dialogService);
         }
     }

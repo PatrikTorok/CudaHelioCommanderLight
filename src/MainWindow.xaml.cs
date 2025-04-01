@@ -538,7 +538,7 @@ namespace CudaHelioCommanderLight
             dgInner.ItemsSource = exD.Executions;
         }
 
-        private void DetailBtn_Click(object sender, RoutedEventArgs e)
+        internal void DetailBtn_Click(object sender, RoutedEventArgs e)
         {
             Execution openedExecution = GetCurrentlyOpenedExecution();
             if (string.IsNullOrEmpty(openedExecution.LocalDirPath))
@@ -559,7 +559,7 @@ namespace CudaHelioCommanderLight
             SwitchPanels(PanelType.EXPLORER);
         }
 
-        private Execution GetCurrentlyOpenedExecution()
+        internal virtual Execution GetCurrentlyOpenedExecution()
         {
             if (dgInner.SelectedIndex != -1)
             {
