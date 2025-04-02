@@ -26,9 +26,9 @@ namespace CudaHelioCommanderLight
     {
         private ObservableCollection<ExecutionRow> executionRows;
         public OutputFileContent outputFileContent { get; set; }
-        private List<Grid> columnSelectorSections;
-        private List<ComboBox> columnSelectorComboBoxes;
-        private List<TextBlock> columnSelectorTextBlocks;
+        internal List<Grid> columnSelectorSections;
+        internal List<ComboBox> columnSelectorComboBoxes;
+        internal List<TextBlock> columnSelectorTextBlocks;
         private List<OutputFileColumnType> supportedColumns;
         private bool currentlyChangingColumns = false;
         private bool isSpectraDivided;
@@ -170,7 +170,7 @@ namespace CudaHelioCommanderLight
             }
         }
 
-        private void UpdateWHLISList()
+        internal void UpdateWHLISList()
         {
             for (int i = 0; i < outputFileContent.WHLISList.Count; i++)
             {
@@ -185,7 +185,7 @@ namespace CudaHelioCommanderLight
             }
         }
 
-        private void UpdateOtherList()
+        internal void UpdateOtherList()
         {
             for (int i = 0; i < outputFileContent.OtherList.Count; i++)
             {
@@ -246,7 +246,7 @@ namespace CudaHelioCommanderLight
             }
         }
 
-        private void ColumnSelectorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        internal void ColumnSelectorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // Prevent double changing columns by UI event call
             if (currentlyChangingColumns)
