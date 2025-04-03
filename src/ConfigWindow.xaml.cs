@@ -4,6 +4,7 @@ using CudaHelioCommanderLight.Interfaces;
 using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace CudaHelioCommanderLight
 {
@@ -16,6 +17,12 @@ namespace CudaHelioCommanderLight
         public bool HasChanged { get; internal set; }
 
         private readonly IMainHelper _mainHelper;
+        public ComboBox K0UnitsComboBoxTest => this.K0UnitsComboBox;
+        public ComboBox VUnitsComboBoxTest => this.VUnitsComboBox;
+        public ComboBox DtUnitsComboBoxTest => this.DtUnitsComboBox;
+        public ComboBox IntensityUnitsComboBoxTest => this.IntensityUnitsComboBox;
+        public TextBox ErrorFromGevTbTest => this.ErrorFromGevTb;
+        public TextBox ErrorToGevTbTest => this.ErrorToGevTb;
 
         public ConfigWindow(IMetricsConfig metricsConfig, IMainHelper mainHelper)
         {
@@ -38,7 +45,7 @@ namespace CudaHelioCommanderLight
             ErrorToGevTb.Text = metricsConfig.ErrorToGev.ToString();
         }
 
-        private void OkButton_Click(object sender, RoutedEventArgs e)
+        internal void OkButton_Click(object sender, RoutedEventArgs e)
         {
             MetricsConfig.K0Metric = (MetricsConfig.K0Metrics)K0UnitsComboBox.SelectedItem;
             MetricsConfig.VMetric = (MetricsConfig.VMetrics)VUnitsComboBox.SelectedItem;
