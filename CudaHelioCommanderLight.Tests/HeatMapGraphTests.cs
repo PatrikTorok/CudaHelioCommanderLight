@@ -37,7 +37,7 @@ public class HeatMapGraphTests
             });
         _heatMapGraph = new HeatMapGraph(_mockMainHelper);
 
-        // Setup test data: 2x2 grid
+
         _testHeatPoints = new HeatMapGraph.HeatPoint[2, 2]
         {
             { new HeatMapGraph.HeatPoint(1, 10, 5), new HeatMapGraph.HeatPoint(1, 20, 10) },
@@ -64,15 +64,15 @@ public class HeatMapGraphTests
     [Test]
     public void ComputeColor_ReturnsExpectedColors()
     {
-        // Test minimum value
+
         var minColor = _heatMapGraph.ComputeColor(0, 100, 0);
         Assert.That(minColor, Is.EqualTo(Color.FromArgb(0xFF, 0, 0, 0xFF))); // Blue
 
-        // Test middle value
+
         var midColor = _heatMapGraph.ComputeColor(0, 100, 50);
         Assert.That(midColor, Is.EqualTo(Color.FromArgb(0xFF, 0, 0xFF, 0))); // Green
 
-        // Test maximum value
+  
         var maxColor = _heatMapGraph.ComputeColor(0, 100, 100);
         Assert.That(maxColor, Is.EqualTo(Color.FromArgb(0xFF, 0xFF, 0, 0))); // Red
     }

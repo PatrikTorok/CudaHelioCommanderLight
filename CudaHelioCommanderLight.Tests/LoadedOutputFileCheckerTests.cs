@@ -66,7 +66,6 @@ namespace CudaHelioCommanderLight.Tests
         [Test]
         public void UpdateColumnSelectorSections_HandlesDifferentColumnCounts()
         {
-            // Test with fewer columns
             _outputFileContent.NumberOfColumns = 3;
             _checker = new LoadedOutputFileChecker(_outputFileContent, _mockMainHelper);
 
