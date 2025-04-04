@@ -72,15 +72,13 @@ public class MainWindowTests
         _mainWindow.GeliosphereLibBurgerRatios = new List<string> { "0.1", "0.2" };
         _mainWindow.GeliosphereLibJGRRatios = new List<string> { "0.3", "0.4" };
 
-        // Initialize ComboBox controls
         _mainWindow.geliosphereLibType = new ComboBox();
         _mainWindow.geliosphereLibRatio = new ComboBox();
 
-        // Initialize other required ComboBoxes
         _mainWindow.geliosphereAllLibType = new ComboBox();
         _mainWindow.geliosphereAllLibRatio = new ComboBox();
         _mainWindow.amsErrorsListBox = new ListBox();
-        // Initialize UI panels
+
         _mainWindow.ExplorerMainpanel = new Grid();
         _mainWindow.ExplorerLeftPanel = new Grid();
         _mainWindow.ExplorerRightPanel = new Grid();
@@ -392,7 +390,7 @@ public class MainWindowTests
     {
         // Arrange
         // Initialize required panels to prevent NullReferenceException
-        _mainWindow.ExplorerMainpanel = new Grid(); // Replace Panel with Grid or another concrete type
+        _mainWindow.ExplorerMainpanel = new Grid();
         _mainWindow.ExplorerLeftPanel = new Grid();
         _mainWindow.ExplorerRightPanel = new Grid();
         _mainWindow.StatusCheckerMainPanel = new Grid();
