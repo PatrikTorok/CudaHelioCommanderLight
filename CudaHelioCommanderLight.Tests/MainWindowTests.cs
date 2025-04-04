@@ -69,8 +69,25 @@ public class MainWindowTests
             openConfigWindowOperation : _openConfigurationWindowOperation,
             true
         );
+        _mainWindow.GeliosphereLibBurgerRatios = new List<string> { "0.1", "0.2" };
+        _mainWindow.GeliosphereLibJGRRatios = new List<string> { "0.3", "0.4" };
 
+        // Initialize ComboBox controls
+        _mainWindow.geliosphereLibType = new ComboBox();
+        _mainWindow.geliosphereLibRatio = new ComboBox();
+
+        // Initialize other required ComboBoxes
+        _mainWindow.geliosphereAllLibType = new ComboBox();
+        _mainWindow.geliosphereAllLibRatio = new ComboBox();
         _mainWindow.amsErrorsListBox = new ListBox();
+        // Initialize UI panels
+        _mainWindow.ExplorerMainpanel = new Grid();
+        _mainWindow.ExplorerLeftPanel = new Grid();
+        _mainWindow.ExplorerRightPanel = new Grid();
+        _mainWindow.StatusCheckerMainPanel = new Grid();
+        _mainWindow.StatusCheckerGridPanelDetail = new Grid();
+        _mainWindow.AmsInvestigationPanel = new Grid();
+        _mainWindow.AmsInvestigationDetailPanel = new Grid();
         _dialogService.SaveFileDialog(out Arg.Any<string>(), Arg.Any<string>())
             .Returns(x => {
                 x[0] = "test.csv";
@@ -421,5 +438,60 @@ public class MainWindowTests
             Arg.Any<int>()
         );
     }
+    [Test]
+    public void GeliosphereLibType_SelectionChanged_UpdatesRatios()
+    {
+        // Arrange
+        _mainWindow.geliosphereLibType.ItemsSource = new List<string> { "Burger", "JGR" };
+        _mainWindow.geliosphereLibType.SelectedIndex = 1;
 
+        // Act
+        _mainWindow.GeliosphereLibType_SelectionChanged(null, null);
+
+        // Assert
+        Assert.That(_mainWindow.geliosphereLibRatio.ItemsSource,
+            Is.EqualTo(_mainWindow.GeliosphereLibJGRRatios));
+    }
+    [Test]
+    public void SwitchPanels_UpdatesVisibilityCorrectly()
+    {
+        // Arrange
+        _mainWindow.ExplorerMainpanel = new Grid();
+        _mainWindow.StatusCheckerMainPanel = new Grid();
+
+        // Act
+        _mainWindow.SwitchPanels(PanelType.EXPLORER);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(_mainWindow.ExplorerMainpanel.Visibility, Is.EqualTo(Visibility.Visible));
+            Assert.That(_mainWindow.StatusCheckerMainPanel.Visibility, Is.EqualTo(Visibility.Hidden));
+        });
+    }
+    [Test]
+    public void OpenExplorerButton_Click_WithInvalidFolder_DoesNotUpdateList()
+    {
+        // Arrange
+        _dialogService.ShowFolderDialog().Returns(false);
+
+        // Act
+        _mainWindow.OpenExplorerButton_Click(null, null);
+
+        // Assert
+        Assert.That(_mainWindow.ExecutionDetailList, Is.Null);
+    }
+    [Test]
+    public void CloseMainPanelButton_Click_ReturnsToPreviousPanel()
+    {
+        // Arrange
+        _mainWindow.SwitchPanels(PanelType.AMS_INVESTIGATION_DETAIL);
+
+        // Act
+        _mainWindow.CloseMainPanelButton_Click(null, null);
+
+        // Assert
+        Assert.That(_mainWindow.currentlyDisplayedPanelType,
+            Is.EqualTo(PanelType.AMS_INVESTIGATION));
+    }
 }

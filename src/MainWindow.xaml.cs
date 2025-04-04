@@ -34,8 +34,8 @@ namespace CudaHelioCommanderLight
         internal int executionDetailSelectedIdx = -1;
         internal List<ErrorStructure> amsComputedErrors;
         internal List<string> GeliosphereLibTypes;
-        private List<string> GeliosphereLibBurgerRatios;
-        private List<string> GeliosphereLibJGRRatios;
+        internal List<string> GeliosphereLibBurgerRatios;
+        internal List<string> GeliosphereLibJGRRatios;
         private MainWindowVm _mainWindowVm;
         private readonly IButtonService _buttonService;
         private readonly IRenderingService _renderingService;
@@ -47,6 +47,7 @@ namespace CudaHelioCommanderLight
         private readonly CompareLibraryOperation _compareLibraryOperation;
         private readonly IMetricsConfig _metricsConfig;
         private readonly IOpenConfigurationWindowOperation _openConfigWindowOperation;
+
 
 
         public MainWindow(IMainHelper mainHelper,
@@ -300,7 +301,7 @@ namespace CudaHelioCommanderLight
             return Math.Abs(d1 - d2) < 0.0000001;
         }
 
-        private void GeliosphereLibType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        internal void GeliosphereLibType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             switch (geliosphereLibType.SelectedIndex)
             {
@@ -356,7 +357,7 @@ namespace CudaHelioCommanderLight
             ActiveCalculationsDataGrid.ItemsSource = ExecutionDetailList;
         }
 
-        private void SwitchPanels(PanelType panelType)
+        internal void SwitchPanels(PanelType panelType)
         {
             ExplorerMainpanel.Visibility = Visibility.Hidden;
             ExplorerLeftPanel.Visibility = Visibility.Hidden;
@@ -411,7 +412,7 @@ namespace CudaHelioCommanderLight
             dataGridAmsInner.ItemsSource = AmsExecutionList;
         }
 
-        private void CloseMainPanelButton_Click(object sender, RoutedEventArgs e)
+        internal void CloseMainPanelButton_Click(object sender, RoutedEventArgs e)
         {
             if (currentlyDisplayedPanelType == PanelType.EXPLORER)
             {
