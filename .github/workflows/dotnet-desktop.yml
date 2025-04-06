@@ -58,3 +58,24 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: PatrikTorok/CudaHelioCommanderLight
           file: ./codecov.yml
+
+  code-quality:
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+  
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "6.x"
+  
+      - name: Install dotnet-format tool globally
+        run: |
+          dotnet tool install --global dotnet-format
+  
+      - name: Format code
+        run: |
+          dotnet format ./src/CudaHelioCommanderLight.sln --verify-no-changes
+        continue-on-error: true
