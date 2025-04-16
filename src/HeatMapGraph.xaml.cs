@@ -282,7 +282,6 @@ namespace CudaHelioCommanderLight
 
         internal void Mark5LowestHighestCb_Checked(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("ASD");
             mark5Lowest = Mark5LowestCb.IsChecked == true;
             mark5Highest = Mark5HighestCb.IsChecked == true;
             UndrawHistogram();
