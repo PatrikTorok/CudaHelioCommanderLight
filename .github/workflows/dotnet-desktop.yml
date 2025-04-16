@@ -14,7 +14,12 @@ jobs:
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "6.0.x" # should be updated to latest .NET version
+          dotnet-version: "6.x" # should be updated to latest .NET version
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets') }}
 
       - name: Build
         run: |
@@ -25,10 +30,57 @@ jobs:
       - name: Publish executable
         run: |
           cd src
-          dotnet publish --configuration Release -r win-x64 --self-contained true /p:PublishSingleFile=true -o ../publish
+          dotnet publish CudaHelioCommanderLight.csproj --configuration Release -r win-x64 --self-contained true /p:PublishSingleFile=true -o ../publish
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: PublishedApp
           path: publish
+          
+  test:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "6.x"
+
+      - name: Test
+        run: |
+          cd CudaHelioCommanderLight.Tests
+          dotnet restore
+          dotnet build --no-restore
+          dotnet test --no-build
+          dotnet test --no-build --collect:"XPlat Code Coverage"
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: gladiatus55/CudaHelioCommanderLight
+          file: ./codecov.yml
+
+  code-quality:
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+  
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "6.x"
+  
+      - name: Install dotnet-format tool globally
+        run: |
+          dotnet tool install --global dotnet-format
+  
+      - name: Format code
+        run: |
+          dotnet format ./src/CudaHelioCommanderLight.sln --verify-no-changes
+        continue-on-error: true

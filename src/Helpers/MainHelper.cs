@@ -8,9 +8,9 @@ using System.Linq;
 
 namespace CudaHelioCommanderLight.Helpers
 {
-    public static class MainHelper
+    public class MainHelper : IMainHelper
     {
-        public static ExecutionStatus ExtractOfflineExecStatus(string offlineResultDirPath)
+        public ExecutionStatus ExtractOfflineExecStatus(string offlineResultDirPath)
         {
             ExecutionStatus executionStatus = new ExecutionStatus();
 
@@ -35,7 +35,7 @@ namespace CudaHelioCommanderLight.Helpers
             return executionStatus;
         }
 
-        public static AmsExecutionDetail ExtractMultipleOfflineStatus(IEnumerable<string> offlineFilePaths)
+        public AmsExecutionDetail ExtractMultipleOfflineStatus(IEnumerable<string> offlineFilePaths)
         {
             //List<DirectoryInfo> dirInfoList = ExecutionHelper.GetExecutionDirectories
             AmsExecutionDetail amsExecutionDetail = new AmsExecutionDetail();
@@ -100,17 +100,18 @@ namespace CudaHelioCommanderLight.Helpers
                     {
                         Console.WriteLine(localFilePath + " - error, Accepting Tkin | spe1e3 [or count 4 for AMS solarprop], got line count " + parsedLine.Count());
                     }
-
-
                 }
 
-                amsExecutionDetail.AmsExecutions.Add(amsExecution);
+                if (amsExecution.TKin.Count > 0)
+                {
+                    amsExecutionDetail.AmsExecutions.Add(amsExecution);
+                }
             }
 
             return amsExecutionDetail;
         }
 
-        public static bool ExtractForceFieldOutputDataFile(string filePath, out OutputFileContent outputFileContent)
+        public bool ExtractForceFieldOutputDataFile(string filePath, out OutputFileContent outputFileContent)
         {
             // TODO: refactor
             outputFileContent = new OutputFileContent();
@@ -184,12 +185,11 @@ namespace CudaHelioCommanderLight.Helpers
          * Extracts output file (output1e3bin) file to outputFileContent class
          * Supported formats:
          * TKin | Spe1e3
-         * TKin | Spe1e3N | Spe1e3
          * TKin | Spe1e3N | Spe1e3 | StdDev
          * If any other format is used, it can be modified with LoadedOutputFileChecker window
         */
 
-        public static bool ExtractOutputDataFile(string filePath, out OutputFileContent outputFileContent)
+        public bool ExtractOutputDataFile(string filePath, out OutputFileContent outputFileContent)
         {
             outputFileContent = new OutputFileContent();
             outputFileContent.IsValid = false;
@@ -260,6 +260,7 @@ namespace CudaHelioCommanderLight.Helpers
                         convertSuccess &= TryConvertToDouble(lineData[0], out tKin);
                         convertSuccess &= TryConvertToDouble(lineData[1], out spe1e3);
 
+
                         if (convertSuccess)
                         {
                             tKinList.Add(tKin);
@@ -282,8 +283,7 @@ namespace CudaHelioCommanderLight.Helpers
             return true;
         }
 
-
-        public static bool TryConvertToDouble(string value, out double result)
+        public bool TryConvertToDouble(string value, out double result)
         {
             var converted = double.TryParse(value, out result);
 
@@ -296,7 +296,7 @@ namespace CudaHelioCommanderLight.Helpers
             return false;
         }
 
-        public static bool TryConvertToDecimal(string value, out decimal result)
+        public bool TryConvertToDecimal(string value, out decimal result)
         {
             var converted = decimal.TryParse(value, out result);
 
@@ -309,7 +309,7 @@ namespace CudaHelioCommanderLight.Helpers
             return false;
         }
 
-        private static Dictionary<string, string> keyWords = new Dictionary<string, string>()
+        private Dictionary<string, string> keyWords = new Dictionary<string, string>()
         {
             { "grid", "Grid-run" },
             { "type", "Type" },
@@ -327,7 +327,7 @@ namespace CudaHelioCommanderLight.Helpers
             { "progress", "Progress" },
             { "iterations", "Iterations" }
         };
-        private static ExecutionDetail ParseDetailFromRunningFile(string runFilePath)
+        private ExecutionDetail ParseDetailFromRunningFile(string runFilePath)
         {
             ExecutionDetail executionDetail = new ExecutionDetail();
 
@@ -461,7 +461,7 @@ namespace CudaHelioCommanderLight.Helpers
             return executionDetail;
         }
 
-        private static string parseParam(string line)
+        private string parseParam(string line)
         {
             int pFrom = line.IndexOf("[");
             int pTo = line.IndexOf("]");
@@ -469,7 +469,7 @@ namespace CudaHelioCommanderLight.Helpers
             return line.Substring(pFrom + 1, pTo - pFrom - 1);
         }
 
-        private static List<string> parseMultiParams(string line)
+        private List<string> parseMultiParams(string line)
         {
             List<string> parsedParams = new List<string>();
             string[] dirtyParsedValues = line.Split('[');

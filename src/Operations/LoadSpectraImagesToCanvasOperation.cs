@@ -7,7 +7,7 @@ using System.IO;
 
 namespace CudaHelioCommanderLight.Operations
 {
-    internal class LoadSpectraImagesToCanvas : Operation<WindowExecutionModel, object>
+    public class LoadSpectraImagesToCanvas : Operation<WindowExecutionModel, object>
     {
         public static new void Operate(WindowExecutionModel windowExecutionModel)
         {

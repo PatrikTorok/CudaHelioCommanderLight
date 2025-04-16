@@ -1,49 +1,42 @@
-﻿using CudaHelioCommanderLight.Models;
+﻿using CudaHelioCommanderLight.Interfaces;
+using CudaHelioCommanderLight.Models;
 using Microsoft.Win32;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Windows;
 
 namespace CudaHelioCommanderLight.Operations
 {
-    public class ExportListAsCsvOperation : Operation<ObservableCollection<AmsExecution>>
+    public static class ExportListAsCsvOperation
     {
-        public static new void Operate(ObservableCollection<AmsExecution> exportList)
+        public static void Operate(IEnumerable<ErrorStructure> exportList, IFileWriter fileWriter, IDialogService dialogService)
         {
             // Show a save file dialog for the user to select the output file
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "CSV Files (*.csv)|*.csv";
-            if (saveFileDialog.ShowDialog() == true)
+            if (!dialogService.SaveFileDialog(out string filePath, "CSV Files (*.csv)|*.csv"))
+                return;
+
+            // Create a StringBuilder to store the CSV data
+            StringBuilder csvData = new StringBuilder();
+
+            // Iterate over each ErrorStructure and add its data to the CSV
+            foreach (var record in exportList)
             {
-                // Get the selected file path
-                string filePath = saveFileDialog.FileName;
+                // Build the CSV row
+                string csvRow = $"{record.DisplayName},{record.Error},{record.MaxError},{record.FilePath}";
+                csvData.AppendLine(csvRow);
+            }
 
-                // Create a StringBuilder to store the CSV data
-                StringBuilder csvData = new StringBuilder();
+            try
+            {
+                // Use the injected file writer to write the CSV data to the selected file
+                fileWriter.WriteToFile(filePath, csvData.ToString());
 
-                // Iterate over each HeatPoint and add its data to the CSV
-                foreach (var record in exportList)
-                {
-
-                    // Build the CSV row
-                    string csvRow = $"{record.FileName},{record.LowestRMSError},{record.LowestRMSErrorFile},{record.MinimalMaxError},{record.MinimalMaxErrorFile}";
-
-                    // Append the row to the CSV data
-                    csvData.AppendLine(csvRow);
-                }
-
-                try
-                {
-                    // Write the CSV data to the selected file
-                    File.WriteAllText(filePath, csvData.ToString());
-
-                    MessageBox.Show("Export successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (IOException ex)
-                {
-                    MessageBox.Show($"An error occurred while exporting the CSV file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                dialogService.ShowMessage("Export successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (IOException ex)
+            {
+                dialogService.ShowMessage($"An error occurred while exporting the CSV file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

@@ -10,27 +10,34 @@ namespace CudaHelioCommanderLight.Operations
     {
         public static new void Operate(ExecutionListExportModel executionModel)
         {
-            List<ExecutionDto> executionDTOs = new List<ExecutionDto>();
-
-            foreach (Execution execution in executionModel.Executions)
+            try
             {
-                executionDTOs.Add(new ExecutionDto()
+                List<ExecutionDto> executionDTOs = new List<ExecutionDto>();
+
+                foreach (Execution execution in executionModel.Executions)
                 {
-                    K0 = execution.K0,
-                    dt = execution.dt,
-                    V = execution.V,
-                    N = execution.N,
-                    Percentage = execution.Percentage,
-                    Error = execution.Error,
-                    Method = nameof(execution.MethodType)
-                });
-            }
+                    executionDTOs.Add(new ExecutionDto()
+                    {
+                        K0 = execution.K0,
+                        dt = execution.dt,
+                        V = execution.V,
+                        N = execution.N,
+                        Percentage = execution.Percentage,
+                        Error = execution.Error,
+                        Method = execution.MethodType.ToString()
+                    });
+                }
 
-            using (StreamWriter file = File.CreateText(executionModel.FilePath))
+                using (StreamWriter file = File.CreateText(executionModel.FilePath))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Formatting = Formatting.Indented;
+                    serializer.Serialize(file, executionDTOs);
+                }
+            }
+            catch (DirectoryNotFoundException ex)
             {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Formatting = Formatting.Indented;
-                serializer.Serialize(file, executionDTOs);
+                throw new IOException("Directory not found while exporting JSON.", ex);
             }
         }
     }

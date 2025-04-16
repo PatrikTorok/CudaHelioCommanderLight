@@ -1,4 +1,5 @@
-﻿using ScottPlot;
+﻿using CudaHelioCommanderLight.Interfaces;
+using ScottPlot;
 
 namespace CudaHelioCommanderLight.Models
 {
@@ -7,5 +8,6 @@ namespace CudaHelioCommanderLight.Models
         public AmsExecution? AmsExecution { get; set; }
         public ErrorStructure? ErrorStructure { get; set; }
         public Plot? Plt { get; set; }
+        public IPlotWrapper PltWrapper { get; set; }
     }
 }

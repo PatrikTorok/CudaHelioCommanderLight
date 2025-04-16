@@ -15,7 +15,8 @@ namespace CudaHelioCommanderLight
     public partial class GraphForceFieldWindow : Window
     {
         private List<ErrorStructure> forceFieldErrors;
-
+        public WpfPlot PlotViewTest => this.PlotView;
+        public List<ErrorStructure> ForceFieldErrors => this.forceFieldErrors;
         public GraphForceFieldWindow(List<ErrorStructure> forceFieldErrors)
         {
             InitializeComponent();

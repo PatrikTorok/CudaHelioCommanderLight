@@ -5,6 +5,8 @@ VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CudaHelioCommanderLight", "CudaHelioCommanderLight.csproj", "{569354F1-FE5C-49A6-8C25-A02C1AF51DEA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CudaHelioCommanderLight.Tests", "..\CudaHelioCommanderLight.Tests\CudaHelioCommanderLight.Tests.csproj", "{76DE87F2-3EAC-4DDB-87CA-1520CB5F833E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,14 @@ Global
 		{569354F1-FE5C-49A6-8C25-A02C1AF51DEA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{569354F1-FE5C-49A6-8C25-A02C1AF51DEA}.Release|x64.ActiveCfg = Release|x64
 		{569354F1-FE5C-49A6-8C25-A02C1AF51DEA}.Release|x64.Build.0 = Release|x64
+		{76DE87F2-3EAC-4DDB-87CA-1520CB5F833E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76DE87F2-3EAC-4DDB-87CA-1520CB5F833E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76DE87F2-3EAC-4DDB-87CA-1520CB5F833E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{76DE87F2-3EAC-4DDB-87CA-1520CB5F833E}.Debug|x64.Build.0 = Debug|Any CPU
+		{76DE87F2-3EAC-4DDB-87CA-1520CB5F833E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76DE87F2-3EAC-4DDB-87CA-1520CB5F833E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76DE87F2-3EAC-4DDB-87CA-1520CB5F833E}.Release|x64.ActiveCfg = Release|Any CPU
+		{76DE87F2-3EAC-4DDB-87CA-1520CB5F833E}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

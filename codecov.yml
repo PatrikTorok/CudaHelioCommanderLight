@@ -1,0 +1,5 @@
+coverage:
+    ignore:
+    - "src/Operations/LoadSpectraImagesToCanvasOperation.cs"
+    - "src/Operations/LoadExplorerDataOperation.cs"
+    - "src/Models"

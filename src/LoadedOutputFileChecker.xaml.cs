@@ -1,11 +1,20 @@
 ﻿using CudaHelioCommanderLight.Enums;
+
 using CudaHelioCommanderLight.Helpers;
+using CudaHelioCommanderLight.Interfaces;
+
 using CudaHelioCommanderLight.Models;
+
 using System;
+
 using System.Collections.Generic;
+
 using System.Collections.ObjectModel;
+
 using System.Linq;
+
 using System.Windows;
+
 using System.Windows.Controls;
 
 namespace CudaHelioCommanderLight
@@ -17,23 +26,22 @@ namespace CudaHelioCommanderLight
     {
         private ObservableCollection<ExecutionRow> executionRows;
         public OutputFileContent outputFileContent { get; set; }
-
-        private List<Grid> columnSelectorSections;
-        private List<ComboBox> columnSelectorComboBoxes;
-        private List<TextBlock> columnSelectorTextBlocks;
+        internal List<Grid> columnSelectorSections;
+        internal List<ComboBox> columnSelectorComboBoxes;
+        internal List<TextBlock> columnSelectorTextBlocks;
         private List<OutputFileColumnType> supportedColumns;
         private bool currentlyChangingColumns = false;
-
         private bool isSpectraDivided;
 
-        public LoadedOutputFileChecker(OutputFileContent outputFileContent)
+        private readonly IMainHelper _mainHelper;
+
+        public LoadedOutputFileChecker(OutputFileContent outputFileContent, IMainHelper mainHelper)
         {
             InitializeComponent();
             this.outputFileContent = outputFileContent;
             this.isSpectraDivided = false;
-
+            _mainHelper = mainHelper ?? throw new ArgumentNullException(nameof(mainHelper));
             InitializeSections();
-
             UpdateList();
             UpdateColumnSelectorSections();
             InitializeDropDownLists();
@@ -48,7 +56,6 @@ namespace CudaHelioCommanderLight
                 if (i + 1 <= outputFileContent.NumberOfColumns)
                 {
                     columnSelectorSections[i].Visibility = Visibility.Visible;
-
                     if (i + 1 <= columns.Length)
                     {
                         columnSelectorTextBlocks[i].Text = columns[i];
@@ -68,7 +75,6 @@ namespace CudaHelioCommanderLight
         private void UpdateList()
         {
             executionRows = new ObservableCollection<ExecutionRow>();
-
             if (outputFileContent.TKinList != null)
             {
                 UpdateTKinList();
@@ -101,7 +107,6 @@ namespace CudaHelioCommanderLight
 
             ExecutionCheckDataGrid.ItemsSource = executionRows;
             ExecutionCheckDataGrid.Items.Refresh();
-
             SetupDivideSpectraCb();
         }
 
@@ -165,7 +170,7 @@ namespace CudaHelioCommanderLight
             }
         }
 
-        private void UpdateWHLISList()
+        internal void UpdateWHLISList()
         {
             for (int i = 0; i < outputFileContent.WHLISList.Count; i++)
             {
@@ -180,7 +185,7 @@ namespace CudaHelioCommanderLight
             }
         }
 
-        private void UpdateOtherList()
+        internal void UpdateOtherList()
         {
             for (int i = 0; i < outputFileContent.OtherList.Count; i++)
             {
@@ -212,7 +217,7 @@ namespace CudaHelioCommanderLight
             this.Close();
         }
 
-        private void DivideSpectraCb_Checked(object sender, RoutedEventArgs e)
+        internal void DivideSpectraCb_Checked(object sender, RoutedEventArgs e)
         {
             if (outputFileContent.Spe1e3List.Count == 0 || outputFileContent.Spe1e3NList.Count == 0)
             {
@@ -225,8 +230,8 @@ namespace CudaHelioCommanderLight
                 {
                     outputFileContent.Spe1e3List[i] = outputFileContent.Spe1e3List[i] / outputFileContent.Spe1e3NList[i];
                 }
-                isSpectraDivided = true;
 
+                isSpectraDivided = true;
                 UpdateList();
             }
             else if (isSpectraDivided && DivideSpectraCb.IsChecked == false)
@@ -235,13 +240,13 @@ namespace CudaHelioCommanderLight
                 {
                     outputFileContent.Spe1e3List[i] = outputFileContent.Spe1e3List[i] * outputFileContent.Spe1e3NList[i];
                 }
-                isSpectraDivided = false;
 
+                isSpectraDivided = false;
                 UpdateList();
             }
         }
 
-        private void ColumnSelectorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        internal void ColumnSelectorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // Prevent double changing columns by UI event call
             if (currentlyChangingColumns)
@@ -250,14 +255,12 @@ namespace CudaHelioCommanderLight
             }
 
             ComboBox comboBox = sender as ComboBox;
-
             if (comboBox == null)
             {
                 return;
             }
 
             bool parseSuccess = Int32.TryParse(comboBox.Tag.ToString(), out int colIdx);
-
             if (!parseSuccess)
             {
                 Console.WriteLine("Error parsing combobox tag");
@@ -278,7 +281,6 @@ namespace CudaHelioCommanderLight
 
             outputFileContent.SwapLists(oldType, columnType);
             currentlyChangingColumns = false;
-
             UpdateList();
         }
 
@@ -301,18 +303,19 @@ namespace CudaHelioCommanderLight
                 }
                 else
                 {
-                    MainHelper.TryConvertToDouble(columnSelectorTextBlocks[idx].Text, out double firstValue);
-                    var columnType = outputFileContent.GetColumnTypeByFirstValue(firstValue);
-                    comboBox.SelectedIndex = supportedColumns.IndexOf(columnType);
-
+                    if (_mainHelper.TryConvertToDouble(columnSelectorTextBlocks[idx].Text, out double firstValue))
+                    {
+                        var columnType = outputFileContent.GetColumnTypeByFirstValue(firstValue);
+                        comboBox.SelectedIndex = supportedColumns.IndexOf(columnType);
+                    }
                 }
+
                 comboBox.SelectionChanged += new SelectionChangedEventHandler(ColumnSelectorComboBox_SelectionChanged);
             }
         }
 
         private void InitializeSections()
         {
-
             columnSelectorComboBoxes = new List<ComboBox>();
             columnSelectorTextBlocks = new List<TextBlock>()
             {
@@ -333,6 +336,16 @@ namespace CudaHelioCommanderLight
                 Col5Grid,
                 Col6Grid,
             };
+        }
+
+        public class ExecutionRow
+        {
+            public double TKin { get; set; }
+            public double Spectra { get; set; }
+            public double Count { get; set; }
+            public double StandardDeviation { get; set; }
+            public double WHLIS { get; set; }
+            public double Other { get; set; }
         }
     }
 }

@@ -1,17 +1,26 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows;
 using CudaHelioCommanderLight.Models;
 using CudaHelioCommanderLight.Operations;
+using CudaHelioCommanderLight.Interfaces;
+using System.Windows;
 
 namespace CudaHelioCommanderLight.MainWindowServices;
 
 public class HeatMapService
 {
-    
+    private readonly IDialogService _dialogService;
+    private readonly IHeatMapGraphFactory _heatMapGraphFactory;
+
+    public HeatMapService(IDialogService dialogService, IHeatMapGraphFactory heatMapGraphFactory)
+    {
+        _dialogService = dialogService;
+        _heatMapGraphFactory = heatMapGraphFactory;
+    }
+
     public void DrawHeatmapBtn(ObservableCollection<ExecutionDetail> executionDetailList, int executionDetailSelectedIdx)
     {
-        HeatMapGraph heatMap = new HeatMapGraph();
+        var heatMap = _heatMapGraphFactory.Create();
         heatMap.Show();
 
         ExecutionDetail executionDetail = executionDetailList[executionDetailSelectedIdx];
@@ -21,7 +30,7 @@ public class HeatMapService
 
         if (xSize < 2 || ySize < 2)
         {
-            MessageBox.Show("Cannot make map");
+            _dialogService.ShowMessage("Cannot make map", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -35,27 +44,24 @@ public class HeatMapService
                 double V = executionDetail.GetParamV()[j];
                 Execution ex = executionDetail.GetExecutionByParam(V, k0);
 
-                if (ex == null)
-                {
-                    heatPoints[i, j] = new HeatMapGraph.HeatPoint(k0, V, double.NaN);
-                    continue;
-                }
-
-                double error = ex.ErrorValue;
-
-                heatPoints[i, j] = new HeatMapGraph.HeatPoint(k0, V, error);
+                heatPoints[i, j] = ex == null
+                    ? new HeatMapGraph.HeatPoint(k0, V, double.NaN)
+                    : new HeatMapGraph.HeatPoint(k0, V, ex.ErrorValue);
             }
         }
 
         heatMap.SetPoints(heatPoints, xSize, ySize);
         heatMap.Render();
     }
-    
-    public void DrawAmsHeatmapBtn(string? currentDisplayedAmsInvestigation, List<ErrorStructure> amsComputedErrors, string tag)
+
+    public void DrawAmsHeatmapBtn(string? currentDisplayedAmsInvestigation,
+                                List<ErrorStructure> amsComputedErrors,
+                                string tag)
     {
         if (amsComputedErrors.Count == 0)
         {
-            MessageBox.Show("Empty errors!");
+            _dialogService.ShowMessage("Empty errors!", "Warning",
+                                     MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -66,5 +72,4 @@ public class HeatMapService
             Tag = tag
         });
     }
-    
 }

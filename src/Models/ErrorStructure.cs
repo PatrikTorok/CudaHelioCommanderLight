@@ -15,7 +15,6 @@ namespace CudaHelioCommanderLight.Models
                 return Error.ToString("0.##") + "% (Max: " + MaxError.ToString("0.##") + "%) " + DisplayName;
             }
         }
-
         public double Error { get; set; }
         public double MaxError { get; set; }
         public string DisplayName { get; set; }
@@ -24,6 +23,13 @@ namespace CudaHelioCommanderLight.Models
         public List<double> Spe1e3binList { get; set; }
         public int V { get; set; }
         public double K0 { get; set; }
+
+        private readonly IMainHelper _mainHelper;
+
+        public ErrorStructure(IMainHelper mainHelper)
+        {
+            _mainHelper = mainHelper ?? throw new ArgumentNullException(nameof(mainHelper));
+        }
 
         public void TrySetVAndK0(string str, LibStructureType libStructureType)
         {
@@ -39,7 +45,7 @@ namespace CudaHelioCommanderLight.Models
                 {
                     if (split[idx].ToLower().Equals("k0"))
                     {
-                        var success = MainHelper.TryConvertToDouble(split[idx + 1], out double outK0);
+                        var success = _mainHelper.TryConvertToDouble(split[idx + 1], out double outK0);
                         if (success)
                         {
                             K0 = outK0;
@@ -47,7 +53,7 @@ namespace CudaHelioCommanderLight.Models
                     }
                     else if (split[idx].ToLower().Equals("v"))
                     {
-                        var success = MainHelper.TryConvertToDouble(split[idx + 1], out double outV);
+                        var success = _mainHelper.TryConvertToDouble(split[idx + 1], out double outV);
                         if (success)
                         {
                             V = (int)outV;
@@ -63,13 +69,15 @@ namespace CudaHelioCommanderLight.Models
                     Console.WriteLine($"Incorrect file {str} in library");
                     return;
                 }
+
                 // outfil_0.0001_0_Burger2000LIS_spectrum_interpolated.dat
-                var success = MainHelper.TryConvertToDouble(split[1], out double outK0);
+                var success = _mainHelper.TryConvertToDouble(split[1], out double outK0);
                 if (success)
                 {
                     K0 = outK0;
                 }
-                success = MainHelper.TryConvertToDouble(split[2], out double theta);
+
+                success = _mainHelper.TryConvertToDouble(split[2], out double theta);
                 if (success)
                 {
                     V = (int)theta;
@@ -80,8 +88,7 @@ namespace CudaHelioCommanderLight.Models
         private List<string> splitStrFileName(string str)
         {
             List<string> splittedStr = new List<string>();
-            var split = str.ToLower().Split('=' );
-
+            var split = str.ToLower().Split('=');
             for (int idx = 0; idx < split.Count(); idx++)
             {
                 if (IsParamTerm(split[idx]) || !IsContainingParamTerm(split[idx]))
@@ -93,22 +100,18 @@ namespace CudaHelioCommanderLight.Models
                 if (IsContainingParamTerm(split[idx]))
                 {
                     var index = split[idx].ToLower().IndexOf('d');
-
                     if (index == -1)
                     {
                         index = split[idx].ToLower().IndexOf('k');
                     }
-
                     if (index == -1)
                     {
                         index = split[idx].ToLower().IndexOf('v');
                     }
-
                     splittedStr.Add(split[idx].Substring(0, index));
                     splittedStr.Add(split[idx].Substring(index));
                 }
             }
-
             return splittedStr;
         }
 
